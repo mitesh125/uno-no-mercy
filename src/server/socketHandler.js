@@ -151,8 +151,8 @@ export function setupSocketHandlers(io, roomManager, timerService) {
             const matchedPlayer = room.gameState.players.find(
               p => p.name.toLowerCase() === playerName.trim().toLowerCase()
             );
-            if (matchedPlayer && !matchedPlayer.isConnected) {
-              // Reconnect this player
+            if (matchedPlayer) {
+              // Reconnect this player (regardless of current isConnected state)
               matchedPlayer.isConnected = true;
               matchedPlayer.disconnectedAt = null;
 
