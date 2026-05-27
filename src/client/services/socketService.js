@@ -98,14 +98,14 @@ export function startGame() {
  * @param {string|null} chosenColor - Required for wild cards
  */
 export function playCard(cardId, chosenColor) {
-  socket.emit('play_card', { cardId, chosenColor });
+  if (socket) socket.emit('play_card', { cardId, chosenColor });
 }
 
 /**
  * Draw a card from the draw pile.
  */
 export function drawCard() {
-  socket.emit('draw_card');
+  if (socket) socket.emit('draw_card');
 }
 
 /**
