@@ -30,15 +30,27 @@ export default function DrawButton() {
 
   const gameState = state.gameState;
   const canDraw = gameState?.canDraw ?? false;
+  const isPendingStack = gameState?.stackChain && gameState.stackChain.pendingPlayerId === state.playerId;
+
+  function handleClick() {
+    if (isPendingStack) {
+      actions.acceptDraw();
+    } else if (canDraw) {
+      actions.drawCard();
+    }
+  }
+
+  const isActive = canDraw || isPendingStack;
+  const label = isPendingStack ? `Accept +${gameState.stackChain.cumulativeDrawCount}` : 'Draw Card';
 
   return (
     <button
-      style={canDraw ? buttonStyle : disabledStyle}
-      onClick={() => canDraw && actions.drawCard()}
-      disabled={!canDraw}
-      aria-label="Draw card"
+      style={isActive ? buttonStyle : disabledStyle}
+      onClick={handleClick}
+      disabled={!isActive}
+      aria-label={label}
     >
-      Draw Card
+      {label}
     </button>
   );
 }
