@@ -156,10 +156,13 @@ export function setupSocketHandlers(io, roomManager, timerService) {
               matchedPlayer.isConnected = true;
               matchedPlayer.disconnectedAt = null;
 
+              // Store old ID before changing
+              const oldId = matchedPlayer.id;
+
               // Update the player's ID in the room map to the new socket ID
-              const oldPlayerInfo = room.players.get(matchedPlayer.id);
+              const oldPlayerInfo = room.players.get(oldId);
               if (oldPlayerInfo) {
-                room.players.delete(matchedPlayer.id);
+                room.players.delete(oldId);
                 oldPlayerInfo.id = socket.id;
                 oldPlayerInfo.socketId = socket.id;
                 room.players.set(socket.id, oldPlayerInfo);
@@ -167,6 +170,16 @@ export function setupSocketHandlers(io, roomManager, timerService) {
 
               // Update the player ID in game state
               matchedPlayer.id = socket.id;
+
+              // Update hostId if this was the host
+              if (room.hostId === oldId) {
+                room.hostId = socket.id;
+              }
+
+              // Update stack chain pendingPlayerId if it referenced the old ID
+              if (room.gameState.stackChain && room.gameState.stackChain.pendingPlayerId === oldId) {
+                room.gameState.stackChain.pendingPlayerId = socket.id;
+              }
 
               // Join the Socket.IO room
               socket.join(room.code);
@@ -178,6 +191,14 @@ export function setupSocketHandlers(io, roomManager, timerService) {
 
               // Notify others
               socket.to(room.code).emit('player_reconnected', { playerId: socket.id, playerName: matchedPlayer.name });
+
+              // Broadcast updated state to all other players so they have correct IDs
+              for (const [pid, pInfo] of room.players) {
+                if (pid !== socket.id) {
+                  const otherState = filterStateForPlayer(room.gameState, pid);
+                  io.to(pInfo.socketId).emit('game_state_update', { gameState: otherState });
+                }
+              }
               return;
             }
           }
