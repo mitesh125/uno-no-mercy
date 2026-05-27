@@ -94,6 +94,8 @@ function gameReducer(state, action) {
       return {
         ...state,
         gameState: action.payload.gameState,
+        playerId: action.payload.playerId || state.playerId,
+        roomCode: action.payload.roomCode || state.roomCode,
         view: 'game',
         error: null,
       };
