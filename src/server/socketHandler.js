@@ -174,7 +174,7 @@ export function setupSocketHandlers(io, roomManager, timerService) {
 
               // Send game state to the reconnected player
               const filteredState = filterStateForPlayer(room.gameState, socket.id);
-              socket.emit('game_started', { gameState: filteredState });
+              socket.emit('game_started', { gameState: filteredState, playerId: socket.id, roomCode: room.code });
 
               // Notify others
               socket.to(room.code).emit('player_reconnected', { playerId: socket.id, playerName: matchedPlayer.name });
